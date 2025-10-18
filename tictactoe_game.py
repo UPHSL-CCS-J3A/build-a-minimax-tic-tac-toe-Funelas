@@ -119,7 +119,7 @@ def play_game():
             # AI move
             print("AI is thinking...")
             # Replace inside play_game (AI turn):
-            _, m = minimax(board, player=ai, me=ai, opp=human)
+            _, m = alphabeta(board, player=ai, alpha=-2, beta=2, me=ai, opp=human)
             board[m] = ai
             print(f"AI chose position {m+1}")
 
