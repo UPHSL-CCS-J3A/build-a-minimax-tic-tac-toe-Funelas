@@ -69,6 +69,8 @@ def minimax(board, player, me='O', opp='X'):
 
 
 def alphabeta(board, player, alpha=-2, beta=2, me='O', opp='X'):
+    global node_count
+    node_count += 1
     if terminal(board):
         return utility(board, me, opp), None
 
@@ -121,7 +123,7 @@ def play_game():
             print("AI is thinking...")
             global node_count
             node_count = 0
-            _, m = minimax(board, player=ai, me=ai, opp=human)
+            _, m = alphabeta(board, player=ai, alpha=-2, beta=2, me=ai, opp=human)
             board[m] = ai
             print(f"AI chose position {m+1}")
             print(f"Nodes searched: {node_count}")
