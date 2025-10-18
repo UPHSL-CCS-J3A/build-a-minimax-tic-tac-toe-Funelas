@@ -1,59 +1,62 @@
 def print_board(board):
-    """Display board in a 3x3 grid."""
+    """Display board in a 3x3 grid with position numbers for empty cells."""
     print("\n")
     for i in range(0, 9, 3):
-        a, b, c = board[i], board[i+1], board[i+2]
+        a = board[i] if board[i] != ' ' else str(i + 1)
+        b = board[i+1] if board[i+1] != ' ' else str(i + 2)
+        c = board[i+2] if board[i+2] != ' ' else str(i + 3)
         print(f" {a} | {b} | {c} ")
         if i < 6:
             print("---+---+---")
     print("\n")
-# --- GAME RULES ---
 
-# All winning triplets (rows, columns, diagonals)
+
+# --- GAME RULES ---
+node_count = 0
 LINES = [
     (0, 1, 2), (3, 4, 5), (6, 7, 8),
     (0, 3, 6), (1, 4, 7), (2, 5, 8),
     (0, 4, 8), (2, 4, 6)
 ]
 
+
 def winner(board):
-    """Return 'X' or 'O' if someone has three in a row, else None."""
     for a, b, c in LINES:
         if board[a] != ' ' and board[a] == board[b] == board[c]:
             return board[a]
     return None
 
+
 def moves(board):
-    """List of indices that are empty."""
     return [i for i, v in enumerate(board) if v == ' ']
 
+
 def terminal(board):
-    """True if the game is over (win or draw)."""
     return winner(board) is not None or not moves(board)
 
+
 def utility(board, me='O', opp='X'):
-    """Score terminal states from AI perspective: +1 win, -1 loss, 0 draw."""
     w = winner(board)
     if w == me:
         return 1
     elif w == opp:
         return -1
     else:
-        return 0  # draw or non-terminal (we only call this at terminal)
+        return 0
+
 
 def minimax(board, player, me='O', opp='X'):
-    """Return (best_value, best_move) assuming optimal play by both sides."""
+    global node_count
+    node_count += 1
     if terminal(board):
         return utility(board, me, opp), None
 
-    # Initialize best value depending on whose turn it is
     best_val = -2 if player == me else 2
     best_move = None
 
     for m in moves(board):
         b2 = board[:]
         b2[m] = player
-        # Switch turn: if player was me, next is opp; else me
         next_player = opp if player == me else me
         val, _ = minimax(b2, next_player, me, opp)
 
@@ -64,11 +67,10 @@ def minimax(board, player, me='O', opp='X'):
 
     return best_val, best_move
 
+
 def alphabeta(board, player, alpha=-2, beta=2, me='O', opp='X'):
     if terminal(board):
         return utility(board, me, opp), None
-
- 
 
     if player == me:
         best = (-2, None)  # MAX
@@ -78,7 +80,7 @@ def alphabeta(board, player, alpha=-2, beta=2, me='O', opp='X'):
             if val > best[0]:
                 best = (val, m)
             alpha = max(alpha, val)
-            if alpha >= beta:  # prune
+            if alpha >= beta:
                 break
         return best
     else:
@@ -89,12 +91,13 @@ def alphabeta(board, player, alpha=-2, beta=2, me='O', opp='X'):
             if val < best[0]:
                 best = (val, m)
             beta = min(beta, val)
-            if alpha >= beta:  # prune
+            if alpha >= beta:
                 break
         return best
 
+
 def play_game():
-    board = [' '] * 9
+    board = [' ' for _ in range(9)]
     human = 'X'
     ai = 'O'
 
@@ -105,7 +108,6 @@ def play_game():
 
     while not terminal(board):
         if current == human:
-            # Human move
             try:
                 pos = int(input("Enter your move (1-9): ")) - 1
             except ValueError:
@@ -116,12 +118,13 @@ def play_game():
                 continue
             board[pos] = human
         else:
-            # AI move
             print("AI is thinking...")
-            # Replace inside play_game (AI turn):
-            _, m = alphabeta(board, player=ai, alpha=-2, beta=2, me=ai, opp=human)
+            global node_count
+            node_count = 0
+            _, m = minimax(board, player=ai, me=ai, opp=human)
             board[m] = ai
             print(f"AI chose position {m+1}")
+            print(f"Nodes searched: {node_count}")
 
         print_board(board)
         current = ai if current == human else human
@@ -133,6 +136,7 @@ def play_game():
         print("🤖 AI wins!")
     else:
         print("😐 It's a draw!")
+
 
 if __name__ == "__main__":
     play_game()
